@@ -30,6 +30,9 @@ kafka-topics --create --topic food_recommendations --bootstrap-server localhost:
 run with application-antidote.properties
 to see how to gracefully handle poison pills
 
+Detailed explanation here:
+https://github.com/tshalaa1/kafka-poison-pill
+
 
 
 
