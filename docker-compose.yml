@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  schema-registry:
+    image: confluentinc/cp-schema-registry:latest
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: "zookeeper:2181"
+
+
+# change this to Dockerfile? to allow building and then running the image (hide the bootstrap server host using env vars)
+#  docker run -p 8081:8081 -e SCHEMA_REGISTRY_HOST_NAME=schema-registry \
+#  -e SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS="{localhost}:9092" \
+#  -e SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM=PLAIN \
+#  confluentinc/cp-schema-registry:latest
