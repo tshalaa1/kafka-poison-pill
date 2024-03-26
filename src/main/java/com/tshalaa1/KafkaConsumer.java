@@ -1,30 +1,25 @@
 package com.tshalaa1;
+import com.tshalaa1.avro.model.PaymentRequest;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.stereotype.Component;
 
+
 @Component
 public class KafkaConsumer {
 
-    private final ConsumerFactory<String, FoodRecommendation> consumerFactory;
+    private final ConsumerFactory<String, PaymentRequest> consumerFactory;
 
     @Autowired
-    public KafkaConsumer(ConsumerFactory<String, FoodRecommendation> consumerFactory) {
+    public KafkaConsumer(ConsumerFactory<String, PaymentRequest> consumerFactory) {
         this.consumerFactory = consumerFactory;
     }
 
-//    @KafkaListener(topics = "food_recommendations", groupId = "group1")
-//    public void consumeBasicSetup(FoodRecommendation foodRecommendation) {
-//        System.out.println("Received message (Basic Setup): " + foodRecommendation);
-//        // Basic setup to process messages
-//    }
-
-    @KafkaListener(topics = "food_recommendations", groupId = "group1")
-    public void consumeWithAntidotes(ConsumerRecord<String, FoodRecommendation> record) {
-        System.out.println("Received message (Antidotes): " + record.value());
-        // Implement logic to handle poison pill messages gracefully
-        // For example, log the error and continue processing other messages
+    @KafkaListener(topics = "payment_requests", groupId = "group1")
+    public void consumer(ConsumerRecord<String, PaymentRequest> record) {
+        System.out.println("Received message: " + record.value());
+        // Implement logic to process the consumed message
     }
 }

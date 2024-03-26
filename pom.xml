@@ -25,16 +25,13 @@
             <artifactId>slf4j-api</artifactId>
             <version>2.0.12</version>
         </dependency>
-
         <!-- Spring Boot Starter -->
         <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter -->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter</artifactId>-->
-<!--            <version>3.2.3</version>-->
-<!--        </dependency>-->
-
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <version>3.2.3</version>
+        </dependency>
         <!-- Spring Kafka -->
         <!-- https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka -->
         <dependency>
@@ -49,14 +46,12 @@
             <artifactId>avro</artifactId>
             <version>1.11.3</version>
         </dependency>
-
         <!-- https://mvnrepository.com/artifact/org.apache.avro/avro-maven-plugin -->
         <dependency>
             <groupId>org.apache.avro</groupId>
             <artifactId>avro-maven-plugin</artifactId>
             <version>1.11.3</version>
         </dependency>
-
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>kafka-avro-serializer</artifactId>
@@ -80,9 +75,6 @@
             <artifactId>jackson-mapper-asl</artifactId>
             <version>1.9.13</version>
         </dependency>
-
-
-
     </dependencies>
 
     <repositories>
@@ -94,9 +86,10 @@
     <build>
         <plugins>
             <plugin>
+                <!-- Generate Java Class from the avro definition -->
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro-maven-plugin</artifactId>
-                <version>1.10.2</version>
+                <version>1.11.1</version>
                 <executions>
                     <execution>
                         <phase>generate-sources</phase>
@@ -105,13 +98,23 @@
                         </goals>
                         <configuration>
                             <sourceDirectory>${project.basedir}/src/main/avro</sourceDirectory>
-                            <outputDirectory>${project.basedir}src/main/java/com/tshalaa1</outputDirectory>
+                            <outputDirectory>${project.basedir}src/main/java</outputDirectory>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
-
 
 </project>

@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "PaymentRequest",
+  "namespace": "com.tshalaa1.avro.model",
+  "fields": [
+    {"name": "id", "type": "int"},
+    {"name": "type", "type": "string"},
+    {"name": "amount", "type": "float"},
+    {"name": "currency", "type": "string"}
+  ]
+}

@@ -1,66 +1,105 @@
-Zookeeper (soon not needed?)
+### Zookeeper (soon not needed?)
+```bash
 zookeeper-server-start /usr/local/etc/zookeeper/zoo.cfg
+```
 
-Kafka broker
+### Kafka Broker
+```bash
 kafka-server-start /usr/local/etc/kafka/server.properties
+```
 
-Schema registry:
+### Schema Registry
+```bash
 docker run -p 8081:8081 -e SCHEMA_REGISTRY_HOST_NAME=schema-registry \
--e SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS="10.58.10.106:9092" \
+-e SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS="{localhost}:9092" \
 -e SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM=PLAIN \
 confluentinc/cp-schema-registry:latest
+```
 
-Setup avro schema
-Generate Java class from avro.avsc
-(TODO: make this step smoother instead of having to drag the generated java class file from the targets folder)
+### Setup Avro Schema and Run the app
+```bash
+mvn clean
+```
 
-kafka-topics --create --topic food_recommendations --bootstrap-server localhost:9092
+```bash
+mvn avro:schema
+```
 
+```bash
+mvn install
+```
+The generated Java class will be generated inside the target folder
 
-run default with application.properties to see poison pill crazy logs:
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=antidote
+```
+```bash
+mvn spring-boot:run
+```
 
+### Create Kafka Topic
+```bash
+kafka-topics --create --topic payment_requests --bootstrap-server localhost:9092
+```
 
-introduce poison pill!
-kafka-console-producer --broker-list localhost:9092 --topic food_recommendations
-{"id": 1234, "name": "name", "rating": 4.7}
+### Run Default with Application Properties
+To see poison pill logs:
+- Introduce poison pill!
+  ```bash
+  kafka-console-producer --broker-list localhost:9092 --topic payment_requests
+  {"id": 1234, "type": "name", "amount": 4.7, "currency": "EUR"}
+  ```
 
-solution 1 - delete topic and recreate:
-kafka-topics --bootstrap-server localhost:9092 --delete --topic food_recommendations
-restart the application for solution to take place
-(due to props rerunning app automatically will create the topic but here is the command anyways)
-kafka-topics --create --topic food_recommendations --bootstrap-server localhost:9092
+### Solutions to Handle Poison Pill (without antidote)
 
-solution 2 - skip offset:
-find the value of the CURRENT-OFFSET, the new offset value should be CURRENT-OFFSET + 1
-kafka-consumer-groups --bootstrap-server localhost:9092 --group group1 --describe
-stop the consumer (i.e. stop the service from running) - since we only have 1 consumer group
-skip the offset with following command
-kafka-consumer-groups --bootstrap-server localhost:9092 --group group1 --topic food_recommendations --reset-offsets --to-offset <CURRENT-OFFSET + 1> --execute
-restart the app
+#### Solution 1 - Delete Topic and Recreate
+- Delete the topic and recreate:
+  ```bash
+  kafka-topics --bootstrap-server localhost:9092 --delete --topic payment_requests
+  ```
+- Restart the application for the solution to take place.
 
-solution 3 - adjust retention period
-default is 604800000 ms which is 7 days
-kafka-configs --zookeeper localhost:2181 --entity-type topics --entity-name food_recommendations --alter --add-config retention.ms=5
-1
-kafka-configs --bootstrap-server localhost:9092 --alter --entity-type topics --entity-name food_recommendations --add-config retention.ms=5
+#### Solution 2 - Skip Offset
+- Find the value of the CURRENT-OFFSET. The new offset value should be CURRENT-OFFSET + 1.
+  ```bash
+  kafka-consumer-groups --bootstrap-server localhost:9092 --group group1 --describe
+  ```
+- Stop the consumer (i.e., stop the service from running).
+- Skip the offset with the following command:
+  ```bash
+  kafka-consumer-groups --bootstrap-server localhost:9092 --group group1 --topic payment_requests --reset-offsets --to-offset <CURRENT-OFFSET + 1> --execute
+  ```
+- Restart the app.
 
+#### Solution 3 - Adjust Retention Period
+- Default retention period is 604800000 ms (7 days). Adjust retention period:
+  ```bash
+  kafka-configs --zookeeper localhost:2181 --entity-type topics --entity-name payment_requests --alter --add-config retention.ms=5
+  ```
+  OR
+  ```bash
+  kafka-configs --bootstrap-server localhost:9092 --alter --entity-type topics --entity-name payment_requests --add-config retention.ms=5
+  ```
 
-run with application-antidote.properties
+### Run with Application-Antidote Properties
+```bash
 -Dspring.profiles.active=antidote
-to see how to gracefully handle poison pills
+```
+to see how to gracefully handle poison pills.
 
-Detailed explanation here:
-https://github.com/tshalaa1/kafka-poison-pill
+For a detailed explanation, visit [here](https://medium.com/p/1eb330e0c703).
 
-postman request to test:
+### Curl Request for Testing
+Run the below on a terminal screen or you can import it in Postman as a request
+```bash
 curl --location --request POST 'http://localhost:9090/produce' \
 --header 'Content-Type: application/json' \
 --data-raw '{
 "id": 1234,
-"name" : "name2",
-"rating" : 1.2
+"type" : "name2",
+"amount" : 1.2,
+"currency" : "EUR"
 }'
+```
 
-
-
-
+This guide outlines the setup, handling of poison pill scenarios, and testing steps for your Kafka application. If you have any questions or need further assistance, refer to the linked GitHub repository or reach out to the project contributors.
