@@ -1,14 +1,14 @@
-### Zookeeper (soon not needed?)
+### Start Zookeeper 
 ```bash
 zookeeper-server-start /usr/local/etc/zookeeper/zoo.cfg
 ```
 
-### Kafka Broker
+### Start Kafka Broker
 ```bash
 kafka-server-start /usr/local/etc/kafka/server.properties
 ```
 
-### Schema Registry
+### Start Schema Registry
 ```bash
 docker run -p 8081:8081 -e SCHEMA_REGISTRY_HOST_NAME=schema-registry \
 -e SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS="{localhost}:9092" \
@@ -16,7 +16,12 @@ docker run -p 8081:8081 -e SCHEMA_REGISTRY_HOST_NAME=schema-registry \
 confluentinc/cp-schema-registry:latest
 ```
 
-### Setup Avro Schema and Run the app
+### Create Kafka Topic
+```bash
+kafka-topics --create --topic payment_requests --bootstrap-server localhost:9092
+```
+
+### Setup Avro Schema
 ```bash
 mvn clean
 ```
@@ -30,24 +35,21 @@ mvn install
 ```
 The generated Java class will be generated inside the target folder
 
-```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=antidote
-```
+### Run Default with Application Properties
 ```bash
 mvn spring-boot:run
 ```
 
-### Create Kafka Topic
-```bash
-kafka-topics --create --topic payment_requests --bootstrap-server localhost:9092
-```
-
-### Run Default with Application Properties
 To see poison pill logs:
 - Introduce poison pill!
   ```bash
   kafka-console-producer --broker-list localhost:9092 --topic payment_requests
-  {"id": 1234, "type": "name", "amount": 4.7, "currency": "EUR"}
+  ```
+  
+- In the resulting terminal screen inserting any data will cause an issue because it does not follow the Avro Schema
+  
+  ```bash
+  {"id": 1234, "type": "name", "amount": 4.7}
   ```
 
 ### Solutions to Handle Poison Pill (without antidote)
@@ -57,7 +59,7 @@ To see poison pill logs:
   ```bash
   kafka-topics --bootstrap-server localhost:9092 --delete --topic payment_requests
   ```
-- Restart the application for the solution to take place.
+- Restart the application for the solution to take effect.
 
 #### Solution 2 - Skip Offset
 - Find the value of the CURRENT-OFFSET. The new offset value should be CURRENT-OFFSET + 1.
@@ -71,23 +73,15 @@ To see poison pill logs:
   ```
 - Restart the app.
 
-#### Solution 3 - Adjust Retention Period
-- Default retention period is 604800000 ms (7 days). Adjust retention period:
-  ```bash
-  kafka-configs --zookeeper localhost:2181 --entity-type topics --entity-name payment_requests --alter --add-config retention.ms=5
-  ```
-  OR
-  ```bash
-  kafka-configs --bootstrap-server localhost:9092 --alter --entity-type topics --entity-name payment_requests --add-config retention.ms=5
-  ```
-
 ### Run with Application-Antidote Properties
+To see how the app can gracefully handle poison pills, run the application with the application-antidote.properties
 ```bash
--Dspring.profiles.active=antidote
+mvn spring-boot:run -Dspring-boot.run.profiles=antidote
 ```
-to see how to gracefully handle poison pills.
 
-For a detailed explanation, visit [here](https://medium.com/p/1eb330e0c703).
+Now introducing any erroneous message through the producer in CLI will just result in logging the problem once.
+
+For further details and explanations, visit [the medium article](https://medium.com/p/1eb330e0c703).
 
 ### Curl Request for Testing
 Run the below on a terminal screen or you can import it in Postman as a request
@@ -101,5 +95,3 @@ curl --location --request POST 'http://localhost:9090/produce' \
 "currency" : "EUR"
 }'
 ```
-
-This guide outlines the setup, handling of poison pill scenarios, and testing steps for your Kafka application. If you have any questions or need further assistance, refer to the linked GitHub repository or reach out to the project contributors.

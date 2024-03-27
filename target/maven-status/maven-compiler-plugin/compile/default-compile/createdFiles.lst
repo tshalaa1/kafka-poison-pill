@@ -1,7 +1,0 @@
-com/tshalaa1/KafkaProducerController.class
-com/tshalaa1/avro/model/PaymentRequest.class
-com/tshalaa1/KafkaConsumer.class
-com/tshalaa1/KafkaConfig.class
-com/tshalaa1/KafkaApplication.class
-com/tshalaa1/avro/model/PaymentRequest$Builder.class
-com/tshalaa1/ErrorMessageRecoverer.class
